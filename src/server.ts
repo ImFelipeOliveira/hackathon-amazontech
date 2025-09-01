@@ -1,7 +1,7 @@
 import express from "express";
 import swaggerUi from "swagger-ui-express";
-import { fileURLToPath } from 'url';
-import path, { dirname } from 'path';
+import {fileURLToPath} from 'url';
+import path, {dirname} from 'path';
 import fs from "fs";
 import yaml from "js-yaml";
 
@@ -21,7 +21,7 @@ async function main() {
         console.error("Erro ao inicializar o servidor:", error);
         process.exit(1);
     }
-};
+}
 
 function getPath() {
     const __filename = fileURLToPath(import.meta.url);
@@ -37,4 +37,4 @@ function getPath() {
 
 }
 
-main();
+main().catch((error) => console.error("Ocorreu algum erro ao iniciar o servidor: ", error))
