@@ -84,6 +84,10 @@ paths:
                 $ref: "#/components/schemas/ListagemInteressadosResponse"
         "404":
           description: Lote não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErroResponse"
 
   /lotes/{id}/analise:
     post:
