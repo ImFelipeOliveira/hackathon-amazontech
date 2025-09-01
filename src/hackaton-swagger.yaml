@@ -77,7 +77,7 @@ paths:
             type: number
       responses:
         "200":
-          description: Busca de interessados no lote realizada com s
+          description: Busca de interessados no lote realizada com sucesso.
           content:
             application/json:
               schema:
