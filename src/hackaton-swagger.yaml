@@ -1,0 +1,235 @@
+openapi: 3.0.3
+info:
+  title: Swagger Hackathon Amazontech
+  description: Documentação swagger para hackathon da AmazonTech
+  version: 1.0.0
+
+tags:
+  - name: Lotes
+    description: Operações relacionadas a Lotes de resíduos
+paths:
+  /lotes/cadastro:
+    post:
+      summary: Cadastra um novo lote de resíduos
+      tags:
+        - Lotes
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/LoteCadastroRequest"
+      responses:
+        "201":
+          description: Lote criado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoteResponse"
+        "400":
+          description: Requisição invalida (ex campos faltando)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErroResponse"
+  /lotes:
+    get:
+      summary: Lista lotes cadastrados por proximidade
+      tags:
+        - Lotes
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          description: Latitude da localização do usuário
+          schema:
+            type: number
+        - name: long
+          in: query
+          required: true
+          description: Longitude do usuário
+          schema:
+            type: number
+        - name: raioKm
+          in: query
+          description: Raio da busca em quilômetros. Padrão 20km.
+          schema:
+            type: number
+            default: 20
+      responses:
+        "200":
+          description: Lista de lotes.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListagemLotesResponse"
+  /lotes/{id}/interessados:
+    get:
+      summary: Busca produtores interessados em um determinado lote
+      tags:
+        - Lotes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do lote
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Busca de interessados no lote realizada com s
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListagemInteressadosResponse"
+        "404":
+          description: Lote não encontrado
+
+  /lotes/{id}/analise:
+    post:
+      summary: Analisa compostagem e retorna recomendações
+      tags:
+        - Lotes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do lote
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnaliseRequest"
+
+components:
+  schemas:
+    Localizacao:
+      type: object
+      properties:
+        latitude:
+          type: number
+          example: 2.8235
+        longitude:
+          type: number
+          example: -60.6758
+      required:
+        - latitude
+        - longitude
+
+    LoteCadastroRequest:
+      type: object
+      properties:
+        photo:
+          type: string
+          format: binary
+          description: Foto do lote de resíduos
+        weight:
+          type: number
+          description: Peso em quilogramas (Kg)
+        limitDate:
+          type: string
+          format: date-time
+          example: "2025-09-05T23:59:59Z"
+        location:
+          $ref: "#/components/schemas/Localizacao"
+      required:
+        - photo
+        - weight
+        - limitDate
+        - location
+
+    LoteResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "lote123abc"
+        descriptionAI:
+          type: string
+          example: "Lote misto com aprox. 60% folhagens e 40% legumes."
+        weight:
+          type: number
+          example: 50
+        limitDate:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [ativo, confirmado, finalizado]
+          example: "ativo"
+        imageUrl:
+          type: string
+          format: uri
+        location:
+          $ref: "#/components/schemas/Localizacao"
+
+    ListagemLotesResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+            example: "lote123abc"
+          description:
+            type: string
+            example: "Supermercado tal"
+          location:
+            $ref: "#/components/schemas/Localizacao"
+          distance:
+            type: string
+            example: "1.5 km"
+          status:
+            type: string
+            example: "ativo"
+          imageUrl:
+            type: string
+            format: uri
+            example: https://firebasestorage.googleapis.com/...
+
+    ListagemInteressadosResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          produtorId:
+            type: string
+            example: "usuario123abc"
+          name:
+            type: string
+            example: "Neymar Júnior"
+          reputation:
+            type: number
+            example: 4.5
+    AnaliseRequest:
+      type: object
+      properties:
+        compostingMethod:
+          type: string
+          description: Método de compostagem que o produtor usa.
+          enum: [windrow, vermicomposting, in_vessel, other]
+          example: "windrow"
+        availableCarbonMaterials:
+          type: array
+          description: Outros materiais secos (ricos em carbono) que o produtor tem à disposição para balancear a mistura.
+          items:
+            type: string
+          example: ["sawdust", "dry_leaves", "shredded_cardboard"]
+        goal:
+          type: string
+          description: Qual o objetivo principal do produtor com este composto.
+          enum: [accelerate_decomposition, increase_nitrogen, balance_ph, other]
+          example: "accelerate_decomposition"
+        observations:
+          type: string
+          description: Campo aberto para o produtor adicionar qualquer observação relevante sobre sua composteira (examplo 'meu composto está muito úmido ultimamente')
+          example: Minha pilha de composto está com cheiro um pouco azedo e muito úmida.
+    ErroResponse:
+      type: object
+      properties:
+        mensagem:
+          type: string
+          example: "Mensagem de erro."
