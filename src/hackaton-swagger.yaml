@@ -218,7 +218,7 @@ paths:
                 $ref: "#/components/schemas/ErroResponse"
 
   /agendamentos/{id}/confirmar:
-    post:
+    patch:
       summary: Confirma um agendamento.
       tags:
         - Agendamentos
@@ -238,7 +238,7 @@ paths:
                 $ref: "#/components/schemas/AgendamentoConfirmado"
 
   /agendamentos/{id}/finalizar:
-    post:
+    patch:
       summary: Finaliza um agendamento.
       tags:
         - Agendamentos
