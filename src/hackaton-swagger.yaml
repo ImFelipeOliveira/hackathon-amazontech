@@ -5,14 +5,100 @@ info:
   version: 1.0.0
 
 tags:
+  - name: Autenticação
+    description: Operações de cadastro e login de usuários.
   - name: Lotes
-    description: Operações relacionadas a Lotes de resíduos
+    description: Operações relacionadas a Lotes de resíduos.
+  - name: Agendamentos
+    description: Operações de agendamento para coleta de lotes de resíduos.
+  - name: Relatórios
+    description: Operações relacionadas a geração de relatórios.
+
+
 paths:
+
+  /auth/merchant/register:
+    post:
+      summary: Cadastra um novo Comércio (Merchant).
+      tags:
+        - Autenticação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MerchantRegisterRequest'
+      responses:
+        "201":
+          description: Comércio cadastrado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        "400":
+          description: Erro de validação (ex e-mail ou CNPJ já existe).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+
+  /auth/producer/register:
+    post:
+      summary: Cadastra um novo Produtor (Producer).
+      tags:
+        - Autenticação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProducerRegisterRequest'
+      responses:
+        "201":
+          description: Produtor cadastrado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        "400":
+          description: Erro de validação (ex e-mail já existe).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+
+  /auth/login:
+    post:
+      summary: Realiza o login de um usuário existente.
+      tags:
+        - Autenticação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        "200":
+          description: Login bem-sucedido. Retorna dados do usuário e token de acesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        "401":
+          description: Credenciais inválidas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+
   /lotes/cadastro:
     post:
-      summary: Cadastra um novo lote de resíduos
+      summary: Cadastra um novo lote de resíduos.
       tags:
         - Lotes
+      security:
+        - BearerAuth: [ ]
       requestBody:
         required: true
         content:
@@ -34,20 +120,22 @@ paths:
                 $ref: "#/components/schemas/ErroResponse"
   /lotes:
     get:
-      summary: Lista lotes cadastrados por proximidade
+      summary: Lista lotes cadastrados por proximidade.
       tags:
         - Lotes
+      security:
+        - BearerAuth: [ ]
       parameters:
         - name: lat
           in: query
           required: true
-          description: Latitude da localização do usuário
+          description: Latitude da localização do usuário.
           schema:
             type: number
         - name: long
           in: query
           required: true
-          description: Longitude do usuário
+          description: Longitude do usuário.
           schema:
             type: number
         - name: raioKm
@@ -65,9 +153,11 @@ paths:
                 $ref: "#/components/schemas/ListagemLotesResponse"
   /lotes/{id}/interessados:
     get:
-      summary: Busca produtores interessados em um determinado lote
+      summary: Busca produtores interessados em um determinado lote.
       tags:
         - Lotes
+      security:
+        - BearerAuth: [ ]
       parameters:
         - name: id
           in: path
@@ -91,9 +181,11 @@ paths:
 
   /lotes/{id}/analise:
     post:
-      summary: Analisa compostagem e retorna recomendações
+      summary: Analisa compostagem e retorna recomendações.
       tags:
         - Lotes
+      security:
+        - BearerAuth: [ ]
       parameters:
         - name: id
           in: path
@@ -107,9 +199,278 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/AnaliseRequest"
+      responses:
+        "200":
+          description: Analise realizada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recommendations:
+                    type: string
+                    example: "Example message."
+        "500":
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErroResponse"
+
+  /agendamentos/{id}/confirmar:
+    post:
+      summary: Confirma um agendamento.
+      tags:
+        - Agendamentos
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do agendamento
+      responses:
+        "200":
+          description: Agendamento confirmado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgendamentoConfirmado"
+
+  /agendamentos/{id}/finalizar:
+    post:
+      summary: Finaliza um agendamento.
+      tags:
+        - Agendamentos
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do agendamento
+      responses:
+        "200":
+          description: Agendamento finalizado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Agendamento finalizado com sucesso."
+        "404":
+          description: Agendamento não encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErroResponse"
+  /agendamentos/{id}/avaliacao:
+    post:
+      summary: Avalia um agendamento.
+      tags:
+        - Agendamentos
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do agendamento
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AvaliacaoRequest"
+      responses:
+        "200":
+          description: Avaliação realizada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Avaliação realizada com sucesso."
+        "404":
+          description: Agendamento não encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErroResponse"
+  /relatorios/impacto:
+    post:
+      summary: Gera um relatório de impacto.
+      tags:
+        - Relatórios
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RelatorioImpactoRequest"
+      responses:
+        "200":
+          description: Relatório gerado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelatorioImpactoResponse"
+        "400":
+          description: Requisição inválida.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErroResponse"
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "ID Token do Firebase Auth obtido no login do cliente."
+
   schemas:
+
+    BaseUser:
+      type: object
+      properties:
+        uid:
+          type: string
+          description: ID do usuário gerado pelo Firebase Authentication.
+          example: "a1b2c3d4e5f6g7h8"
+        email:
+          type: string
+          format: email
+          example: "contato@email.com"
+        name:
+          type: string
+          description: "Nome do responsável ou nome fantasia."
+          example: "João da Silva / Supermercado Preço Bom"
+        phone_number:
+          type: string
+          example: "95991234567"
+        role:
+          type: string
+          description: "Define o tipo de usuário."
+          enum: [ merchant, producer ]
+        created_at:
+          type: string
+          format: date-time
+
+    Merchant:
+      allOf:
+        - $ref: '#/components/schemas/BaseUser'
+        - type: object
+          properties:
+            role:
+              type: string
+              example: "merchant"
+            tax_id:
+              type: string
+              description: "CNPJ do comércio."
+              example: "12.345.678/0001-99"
+            legal_name:
+              type: string
+              description: "Razão Social do comércio."
+              example: "Supermercado Preço Bom Ltda."
+            address:
+              $ref: '#/components/schemas/Endereco'
+            location:
+              $ref: '#/components/schemas/Localizacao'
+
+    Producer:
+      allOf:
+        - $ref: '#/components/schemas/BaseUser'
+        - type: object
+          properties:
+            role:
+              type: string
+              example: "producer"
+            collection_capacity_kg:
+              type: number
+              description: "Capacidade máxima de coleta por viagem em Kg."
+              example: 500
+            accepted_waste_types:
+              type: array
+              items:
+                type: string
+              example: [ "frutas", "legumes", "folhagens" ]
+            reputation:
+              type: object
+              properties:
+                average_rating:
+                  type: number
+                  example: 4.8
+                total_reviews:
+                  type: integer
+                  example: 25
+
+    MerchantRegisterRequest:
+      type: object
+      properties:
+        email: { type: string }
+        password: { type: string, format: password }
+        name: { type: string }
+        phone_number: { type: string }
+        tax_id: { type: string }
+        legal_name: { type: string }
+        address: { $ref: '#/components/schemas/Endereco' }
+        location: { $ref: '#/components/schemas/Localizacao' }
+      required:
+        - email
+        - password
+        - name
+        - tax_id
+        - address
+        - location
+
+    ProducerRegisterRequest:
+      type: object
+      properties:
+        email: { type: string }
+        password: { type: string, format: password }
+        name: { type: string }
+        phone_number: { type: string }
+        collection_capacity_kg: { type: number }
+        accepted_waste_types: { type: array, items: { type: string } }
+      required:
+        - email
+        - password
+        - name
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: "Token JWT para autenticar as próximas requisições."
+        user:
+          oneOf:
+            - $ref: '#/components/schemas/Merchant'
+            - $ref: '#/components/schemas/Producer'
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: "contato@supermercado.com"
+        password:
+          type: string
+          format: password
+          example: "senhaForte123"
+      required:
+        - email
+        - password
+
     Localizacao:
       type: object
       properties:
@@ -133,7 +494,7 @@ components:
         weight:
           type: number
           description: Peso em quilogramas (Kg)
-        limitDate:
+        limit_date:
           type: string
           format: date-time
           example: "2025-09-05T23:59:59Z"
@@ -142,7 +503,7 @@ components:
       required:
         - photo
         - weight
-        - limitDate
+        - limit_date
         - location
 
     LoteResponse:
@@ -151,20 +512,23 @@ components:
         id:
           type: string
           example: "lote123abc"
-        descriptionAI:
+        merchant_name:
+          type: string
+          example: "Supermercado Preço bom"
+        merchant_address:
+          $ref: "#/components/schemas/Endereco"
+        description_ai:
           type: string
           example: "Lote misto com aprox. 60% folhagens e 40% legumes."
         weight:
           type: number
           example: 50
-        limitDate:
+        limit_date:
           type: string
           format: date-time
         status:
-          type: string
-          enum: [ativo, confirmado, finalizado]
-          example: "ativo"
-        imageUrl:
+          $ref: "#/components/schemas/AgendamentoStatusEnum"
+        image_url:
           type: string
           format: uri
         location:
@@ -178,9 +542,14 @@ components:
           id:
             type: string
             example: "lote123abc"
-          description:
+          merchant_id:
             type: string
-            example: "Supermercado tal"
+            example: id_123_abc
+          merchant_name:
+            type: string
+            example: "Supermercado Preço bom"
+          merchant_address:
+            $ref: "#/components/schemas/Endereco"
           location:
             $ref: "#/components/schemas/Localizacao"
           distance:
@@ -189,7 +558,7 @@ components:
           status:
             type: string
             example: "ativo"
-          imageUrl:
+          image_url:
             type: string
             format: uri
             example: https://firebasestorage.googleapis.com/...
@@ -199,41 +568,180 @@ components:
       items:
         type: object
         properties:
-          produtorId:
+          producer_id:
             type: string
             example: "usuario123abc"
-          name:
+          producer_name:
             type: string
             example: "Neymar Júnior"
+          producer_address:
+            $ref: "#/components/schemas/Endereco"
           reputation:
             type: number
             example: 4.5
     AnaliseRequest:
       type: object
       properties:
-        compostingMethod:
+        composting_method:
           type: string
           description: Método de compostagem que o produtor usa.
-          enum: [windrow, vermicomposting, in_vessel, other]
+          enum: [ windrow, vermicomposting, in_vessel, other ]
           example: "windrow"
-        availableCarbonMaterials:
+        available_carbon_materials:
           type: array
           description: Outros materiais secos (ricos em carbono) que o produtor tem à disposição para balancear a mistura.
           items:
             type: string
-          example: ["sawdust", "dry_leaves", "shredded_cardboard"]
+          example: [ "sawdust", "dry_leaves", "shredded_cardboard" ]
         goal:
           type: string
           description: Qual o objetivo principal do produtor com este composto.
-          enum: [accelerate_decomposition, increase_nitrogen, balance_ph, other]
+          enum: [ accelerate_decomposition, increase_nitrogen, balance_ph, other ]
           example: "accelerate_decomposition"
         observations:
           type: string
           description: Campo aberto para o produtor adicionar qualquer observação relevante sobre sua composteira (examplo 'meu composto está muito úmido ultimamente')
           example: Minha pilha de composto está com cheiro um pouco azedo e muito úmida.
+    AgendamentoStatusEnum:
+      type: string
+      enum: [ active, confirmed, finished ]
+      example: "confirmed"
+    Agendamento:
+      type: object
+      properties:
+        id:
+          type: string
+          example: agendamento_abc456
+        status:
+          type: string
+          example: "confirmed"
+        scheduled_date:
+          type: string
+          format: datetime
+          example: 2025-09-05T23:59:59Z
+        producer_id:
+          type: string
+          example: produtor_abc456
+        merchant_id:
+          type: string
+          example: comerciante_xyz123
+    LoteAgendamento:
+      type: object
+      properties:
+        id:
+          type: string
+          example: lote_123_abc
+        status:
+          type: string
+          example: confirmed
+        description_ia:
+          type: string
+          example: Lote misto com aprox. 60% folhagens e 40% legumes.
+        weight:
+          type: number
+          description: Peso em quilogramas KG
+          example: 50
+    ProdutorConfirmado:
+      type: object
+      properties:
+        id:
+          type: string
+          example: produtor_abc456
+        name:
+          type: string
+          example: Neymar júnior
+        phone_number:
+          type: number
+          format: datetime
+          example: 95981035934
+        reputation:
+          type: number
+          example: 4.5
+    DadosDeColeta:
+      type: object
+      properties:
+        id:
+          type: string
+          example: id_123_abc
+        full_address:
+          type: string
+          example: Av. Capitão Ene Garcez, 1234, Centro, Boa Vista, RR, 69301-160
+        company_name:
+          type: string
+          example: Supermercado Preço Bom
+        telephone_phone_number:
+          type: number
+          example: 9532102030
+    AgendamentoConfirmado:
+      type: object
+      properties:
+        scheduling:
+          $ref: "#/components/schemas/Agendamento"
+        batch:
+          $ref: "#/components/schemas/LoteAgendamento"
+        producer_confirmed:
+          $ref: "#/components/schemas/ProdutorConfirmado"
+        collection_data:
+          $ref: "#/components/schemas/DadosDeColeta"
+    Endereco:
+      type: object
+      properties:
+        street:
+          type: string
+          example: "Av. Capitão Ene Garcez"
+        number:
+          type: string
+          example: "1234"
+        neighborhood:
+          type: string
+          example: "Centro"
+        city:
+          type: string
+          example: "Boa Vista"
+        state:
+          type: string
+          example: "RR"
+        zip_code:
+          type: string
+          example: "69301-160"
+
+    AvaliacaoRequest:
+      type: object
+      properties:
+        rating:
+          type: number
+          format: float
+          example: 4.5
+        comments:
+          type: string
+          example: "Ótimo atendimento e coleta."
+
+    RelatorioImpactoRequest:
+      type: object
+      properties:
+        start_date:
+          type: string
+          format: date
+          example: "2023-01-01"
+        end_date:
+          type: string
+          format: date
+          example: "2023-12-31"
+        producer_id:
+          type: string
+          example: "produtor123abc"
+      required:
+        - start_date
+        - producer_id
+    RelatorioImpactoResponse:
+      type: object
+      properties:
+        report:
+          type: string
+          example: "Relatório aqui..."
     ErroResponse:
       type: object
       properties:
-        mensagem:
+        error:
           type: string
           example: "Mensagem de erro."
