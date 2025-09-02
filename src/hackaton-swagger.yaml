@@ -727,12 +727,8 @@ components:
           type: string
           format: date
           example: "2023-12-31"
-        producer_id:
-          type: string
-          example: "produtor123abc"
       required:
         - start_date
-        - producer_id
     RelatorioImpactoResponse:
       type: object
       properties:
