@@ -217,6 +217,103 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErroResponse"
 
+  /agendamentos:
+    get:
+      summary: Lista os agendamentos do produtor logado.
+      tags:
+        - Agendamentos
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Filtra os agendamentos por um status específico.
+          schema:
+            $ref: "#/components/schemas/AgendamentoStatusEnum"
+      responses:
+        "200":
+          description: Lista de agendamentos retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListagemAgendamentosResponse"
+        "403":
+          description: Ação não permitida (exemplo um Comércio tentando acessar esta rota).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErroResponse"
+    post:
+      summary: Cria um novo agendamento para coleta de um lote.
+      tags:
+        - Agendamentos
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgendamentoRequest"
+      responses:
+        "201":
+          description: Agendamento criado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agendamento"
+        "400":
+          description: Requisição inválida (ex data no passado, lote já agendado)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErroResponse"
+        "403":
+          description: Ação não permitida (examplo um Comércio tentando agendar).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErroResponse"
+        "404":
+          description: Lote não encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErroResponse"
+        "409":
+          description: Conflito (exemplo Lote não está mais ativo ou você já agendou para este lote).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErroResponse"
+
+  /agendamentos/{id}:
+    get:
+      summary: Obtém os detalhes de um agendamento.
+      tags:
+        - Agendamentos
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do agendamento
+      responses:
+        "200":
+          description: Detalhes do agendamento retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgendamentoProducer"
+        "404":
+          description: Agendamento não encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErroResponse"
+
   /agendamentos/{id}/confirmar:
     patch:
       summary: Confirma um agendamento.
@@ -683,6 +780,15 @@ components:
           $ref: "#/components/schemas/ProdutorConfirmado"
         collection_data:
           $ref: "#/components/schemas/DadosDeColeta"
+    AgendamentoProducer:
+      type: object
+      properties:
+        scheduling:
+          $ref: "#/components/schemas/Agendamento"
+        batch:
+          $ref: "#/components/schemas/LoteAgendamento"
+        merchant:
+          $ref: "#/components/schemas/Merchant"
     Endereco:
       type: object
       properties:
@@ -736,6 +842,56 @@ components:
         report:
           type: string
           example: "Relatório aqui..."
+    AgendamentoRequest:
+      type: object
+      properties:
+        lote_id:
+          type: string
+          example: "lote123abc"
+        scheduled_date:
+          type: string
+          format: date-time
+          example: "2025-09-05T23:59:59Z"
+      required:
+        - lote_id
+        - scheduled_date
+    ListagemAgendamentosResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          scheduling_id:
+            type: string
+            example: "agendamento_abc456"
+          status:
+            $ref: "#/components/schemas/AgendamentoStatusEnum"
+          scheduled_date:
+            type: string
+            format: date-time
+            example: "2025-09-05T14:00:00Z"
+          batch_info:
+            type: object
+            properties:
+              id:
+                type: string
+                example: "lote_xyz123"
+              image_url:
+                type: string
+                format: uri
+                example: "https://firebasestorage.googleapis.com/..."
+              description:
+                type: string
+                example: "Lote misto com aprox. 60% folhagens..."
+          merchant_info:
+            type: object
+            properties:
+              uid:
+                type: string
+                example: "comerciante_xyz123"
+              name:
+                type: string
+                example: "Supermercado Preço Bom"
+
     ErroResponse:
       type: object
       properties:
