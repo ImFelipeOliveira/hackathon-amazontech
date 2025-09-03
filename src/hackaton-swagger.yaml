@@ -14,9 +14,7 @@ tags:
   - name: Relatórios
     description: Operações relacionadas a geração de relatórios.
 
-
 paths:
-
   /auth/merchant/register:
     post:
       summary: Cadastra um novo Comércio (Merchant).
@@ -27,20 +25,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MerchantRegisterRequest'
+              $ref: "#/components/schemas/MerchantRegisterRequest"
       responses:
         "201":
           description: Comércio cadastrado com sucesso.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponse'
+                $ref: "#/components/schemas/AuthResponse"
         "400":
           description: Erro de validação (ex e-mail ou CNPJ já existe).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErroResponse'
+                $ref: "#/components/schemas/ErroResponse"
 
   /auth/producer/register:
     post:
@@ -52,20 +50,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProducerRegisterRequest'
+              $ref: "#/components/schemas/ProducerRegisterRequest"
       responses:
         "201":
           description: Produtor cadastrado com sucesso.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponse'
+                $ref: "#/components/schemas/AuthResponse"
         "400":
           description: Erro de validação (ex e-mail já existe).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErroResponse'
+                $ref: "#/components/schemas/ErroResponse"
 
   /auth/login:
     post:
@@ -77,20 +75,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
+              $ref: "#/components/schemas/LoginRequest"
       responses:
         "200":
           description: Login bem-sucedido. Retorna dados do usuário e token de acesso.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponse'
+                $ref: "#/components/schemas/AuthResponse"
         "401":
           description: Credenciais inválidas.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErroResponse'
+                $ref: "#/components/schemas/ErroResponse"
 
   /lotes/cadastro:
     post:
@@ -98,7 +96,7 @@ paths:
       tags:
         - Lotes
       security:
-        - BearerAuth: [ ]
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -124,7 +122,7 @@ paths:
       tags:
         - Lotes
       security:
-        - BearerAuth: [ ]
+        - BearerAuth: []
       parameters:
         - name: lat
           in: query
@@ -157,14 +155,15 @@ paths:
       tags:
         - Lotes
       security:
-        - BearerAuth: [ ]
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
           description: ID do lote
           schema:
-            type: number
+            type: string
+            example: y4F8gT2hN9kLpW3jR7sV
       responses:
         "200":
           description: Busca de interessados no lote realizada com sucesso.
@@ -185,14 +184,15 @@ paths:
       tags:
         - Lotes
       security:
-        - BearerAuth: [ ]
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
           description: ID do lote
           schema:
-            type: number
+            type: string
+            example: y4F8gT2hN9kLpW3jR7sV
       requestBody:
         required: true
         content:
@@ -223,7 +223,7 @@ paths:
       tags:
         - Agendamentos
       security:
-        - BearerAuth: [ ]
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -243,7 +243,7 @@ paths:
       tags:
         - Agendamentos
       security:
-        - BearerAuth: [ ]
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -272,7 +272,7 @@ paths:
       tags:
         - Agendamentos
       security:
-        - BearerAuth: [ ]
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -307,7 +307,7 @@ paths:
       tags:
         - Relatórios
       security:
-        - BearerAuth: [ ]
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -337,7 +337,6 @@ components:
       description: "ID Token do Firebase Auth obtido no login do cliente."
 
   schemas:
-
     BaseUser:
       type: object
       properties:
@@ -359,14 +358,14 @@ components:
         role:
           type: string
           description: "Define o tipo de usuário."
-          enum: [ merchant, producer ]
+          enum: [merchant, producer]
         created_at:
           type: string
           format: date-time
 
     Merchant:
       allOf:
-        - $ref: '#/components/schemas/BaseUser'
+        - $ref: "#/components/schemas/BaseUser"
         - type: object
           properties:
             role:
@@ -381,13 +380,13 @@ components:
               description: "Razão Social do comércio."
               example: "Supermercado Preço Bom Ltda."
             address:
-              $ref: '#/components/schemas/Endereco'
+              $ref: "#/components/schemas/Endereco"
             location:
-              $ref: '#/components/schemas/Localizacao'
+              $ref: "#/components/schemas/Localizacao"
 
     Producer:
       allOf:
-        - $ref: '#/components/schemas/BaseUser'
+        - $ref: "#/components/schemas/BaseUser"
         - type: object
           properties:
             role:
@@ -401,7 +400,7 @@ components:
               type: array
               items:
                 type: string
-              example: [ "frutas", "legumes", "folhagens" ]
+              example: ["frutas", "legumes", "folhagens"]
             reputation:
               type: object
               properties:
@@ -421,8 +420,8 @@ components:
         phone_number: { type: string }
         tax_id: { type: string }
         legal_name: { type: string }
-        address: { $ref: '#/components/schemas/Endereco' }
-        location: { $ref: '#/components/schemas/Localizacao' }
+        address: { $ref: "#/components/schemas/Endereco" }
+        location: { $ref: "#/components/schemas/Localizacao" }
       required:
         - email
         - password
@@ -453,8 +452,8 @@ components:
           description: "Token JWT para autenticar as próximas requisições."
         user:
           oneOf:
-            - $ref: '#/components/schemas/Merchant'
-            - $ref: '#/components/schemas/Producer'
+            - $ref: "#/components/schemas/Merchant"
+            - $ref: "#/components/schemas/Producer"
 
     LoginRequest:
       type: object
@@ -499,7 +498,9 @@ components:
           format: date-time
           example: "2025-09-05T23:59:59Z"
         location:
-          $ref: "#/components/schemas/Localizacao"
+          type: string
+          description: "Objeto Localizacao em formato de string JSON."
+          example: '{"latitude": 2.8235, "longitude": -60.6758}'
       required:
         - photo
         - weight
@@ -557,7 +558,7 @@ components:
             example: "1.5 km"
           status:
             type: string
-            example: "ativo"
+            example: "active"
           image_url:
             type: string
             format: uri
@@ -585,18 +586,18 @@ components:
         composting_method:
           type: string
           description: Método de compostagem que o produtor usa.
-          enum: [ windrow, vermicomposting, in_vessel, other ]
+          enum: [windrow, vermicomposting, in_vessel, other]
           example: "windrow"
         available_carbon_materials:
           type: array
           description: Outros materiais secos (ricos em carbono) que o produtor tem à disposição para balancear a mistura.
           items:
             type: string
-          example: [ "sawdust", "dry_leaves", "shredded_cardboard" ]
+          example: ["sawdust", "dry_leaves", "shredded_cardboard"]
         goal:
           type: string
           description: Qual o objetivo principal do produtor com este composto.
-          enum: [ accelerate_decomposition, increase_nitrogen, balance_ph, other ]
+          enum: [accelerate_decomposition, increase_nitrogen, balance_ph, other]
           example: "accelerate_decomposition"
         observations:
           type: string
@@ -604,7 +605,7 @@ components:
           example: Minha pilha de composto está com cheiro um pouco azedo e muito úmida.
     AgendamentoStatusEnum:
       type: string
-      enum: [ active, confirmed, finished ]
+      enum: [active, awaiting_confirmation, confirmed, rejected, finished]
       example: "confirmed"
     Agendamento:
       type: object
@@ -651,8 +652,7 @@ components:
           type: string
           example: Neymar júnior
         phone_number:
-          type: number
-          format: datetime
+          type: string
           example: 95981035934
         reputation:
           type: number
@@ -670,7 +670,7 @@ components:
           type: string
           example: Supermercado Preço Bom
         telephone_phone_number:
-          type: number
+          type: string
           example: 9532102030
     AgendamentoConfirmado:
       type: object
@@ -729,6 +729,7 @@ components:
           example: "2023-12-31"
       required:
         - start_date
+        - end_date
     RelatorioImpactoResponse:
       type: object
       properties:
